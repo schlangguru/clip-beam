@@ -1,10 +1,9 @@
-import { html, render } from 'lit-html'
-import { BrowserQRCodeSvgWriter } from "@zxing/library";
+import {html, render} from 'lit-html';
+import {BrowserQRCodeSvgWriter} from '@zxing/library';
 
-const codeWriter = new BrowserQRCodeSvgWriter()
+const codeWriter = new BrowserQRCodeSvgWriter();
 
 class QrCode extends HTMLElement {
-
   constructor() {
     super();
     this.attachShadow({mode: 'open'});
@@ -21,17 +20,17 @@ class QrCode extends HTMLElement {
   template() {
     return html`
       <div>
-        ${ codeWriter.write(this.value, 300, 300) }
+        ${codeWriter.write(this.value, 300, 300)}
       </div>
     `;
   };
 
   static get observedAttributes() {
-    return ['value']
+    return ['value'];
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
-    this.render()
+    this.render();
   }
 
   get value() {
@@ -39,9 +38,8 @@ class QrCode extends HTMLElement {
   }
 
   set value(newValue) {
-    this.setAttribute('value', newValue)
+    this.setAttribute('value', newValue);
   }
-
 }
 
 customElements.define('qr-code', QrCode);

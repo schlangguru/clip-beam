@@ -1,9 +1,7 @@
-import { v4 as uuidv4 } from "uuid";
+import {v4 as uuidv4} from 'uuid';
 
 const uuid = uuidv4();
 document.querySelector('qr-code').setAttribute('value', uuid);
-
-
 
 // export function waitForConnetion() {
 //   // Create WebSocket connection.
