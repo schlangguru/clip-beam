@@ -3,6 +3,7 @@ import {v4 as uuidv4} from 'uuid';
 
 // Components
 import './components/qr-code.js';
+import './components/qr-scanner.js';
 
 // Services
 import * as webrtcService from './services/webrtc-service.js';
@@ -13,7 +14,7 @@ class ClipBeamApp extends HTMLElement {
     this.attachShadow({mode: 'open'});
 
     this.uuid = uuidv4();
-    webrtcService.registerClient(this.uuid);
+    // webrtcService.registerClient(this.uuid);
   }
 
   connectedCallback() {
@@ -29,6 +30,7 @@ class ClipBeamApp extends HTMLElement {
       <div class="wrapper">
         <div class="content">
             <qr-code value="${this.uuid}"></qr-code>
+            <qr-scanner></qr-scanner>
             <button type="button">Scan</button>
         </div>
       </div>
