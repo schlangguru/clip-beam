@@ -4,12 +4,16 @@ import {v4 as uuidv4} from 'uuid';
 // Components
 import './components/qr-code.js';
 
+// Services
+import * as webrtcService from './services/webrtc-service.js';
+
 class ClipBeamApp extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({mode: 'open'});
 
     this.uuid = uuidv4();
+    webrtcService.registerClient(this.uuid);
   }
 
   connectedCallback() {
@@ -62,27 +66,3 @@ class ClipBeamApp extends HTMLElement {
 }
 
 customElements.define('clip-beam-app', ClipBeamApp);
-
-// document.querySelector('qr-code').setAttribute('value', uuid);
-
-// export function waitForConnetion() {
-//   // Create WebSocket connection.
-//   const socket = new WebSocket("ws://localhost:9090");
-
-//   // Connection opened
-//   socket.addEventListener("open", function (event) {
-//     const data = {
-//       uuid: uuidv4(),
-//     };
-//     socket.send(JSON.stringify(data));
-//   });
-
-//   // Listen for messages
-//   socket.addEventListener("message", function (event) {
-//     console.log("Message from server ", event.data);
-//   });
-// }
-
-// export function connect() {
-//   console.log("Todo")
-// }
