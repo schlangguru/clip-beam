@@ -1,18 +1,35 @@
 <template>
   <div class="wrapper">
     <div class="content">
-      <div v-if="connectToDevice">
-        <qr-scanner></qr-scanner>
+      <div class="card">
+        <div v-if="connectToDevice">
+          <qr-scanner></qr-scanner>
+          <div class="p-inputgroup">
+            <InputText placeholder="Enter ID manually" />
+            <Button icon="pi pi-caret-right" class="p-button-success" />
+          </div>
+        </div>
+        <div v-else>
+          <qr-code :value="myUuid"></qr-code>
+          <Button
+            class="p-button-secondary"
+            icon="pi pi-copy"
+            label="Copy ID to clipboard"
+            @click="copyUuidToClipboard"
+          ></Button>
+        </div>
+      </div>
+
+      <div class="card">
         <Button
+          v-if="connectToDevice"
           icon="pi pi-th-large"
           label="Show my connection info"
           @click="connectToDevice = false"
-        >
-        </Button>
-      </div>
-      <div v-else>
-        <qr-code :value="uuid"></qr-code>
+        ></Button>
+
         <Button
+          v-else
           icon="pi pi-cloud-upload"
           label="Connect to a device"
           @click="connectToDevice = true"
@@ -27,6 +44,7 @@ import { defineComponent } from "vue";
 
 // Compoenents
 import Button from "primevue/button";
+import InputText from "primevue/inputtext";
 import QrCode from "../components/QrCode.vue";
 import QrScanner from "../components/QrScanner.vue";
 
@@ -37,14 +55,33 @@ export default defineComponent({
   name: "Home",
   components: {
     Button,
+    InputText,
     QrCode,
     QrScanner
   },
   data() {
     return {
-      uuid: uuidv4(),
+      myUuid: uuidv4(),
+      peerUuid: null as string | null,
       connectToDevice: false
     };
+  },
+  methods: {
+    copyUuidToClipboard() {
+      const textArea = document.createElement("textarea");
+      textArea.value = this.myUuid;
+
+      // Avoid scrolling to bottom
+      textArea.style.top = "0";
+      textArea.style.left = "0";
+      textArea.style.position = "fixed";
+
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textArea);
+    }
   }
 });
 </script>
@@ -70,8 +107,12 @@ export default defineComponent({
 
 .wrapper .content {
   grid-area: content;
+}
+
+.card {
   background-color: #fff;
   border-radius: 10px;
+  margin: 10px;
   padding: 10px;
   text-align: center;
 }
