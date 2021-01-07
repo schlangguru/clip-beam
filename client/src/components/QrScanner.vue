@@ -1,18 +1,5 @@
 <template>
   <div>
-    <div id="sourceSelectPanel">
-      <label for="sourceSelect">Select Camera:</label>
-      <select id="sourceSelect" @change="cameraChanged">
-        <option
-          v-for="camera in cameras"
-          v-bind:key="camera.deviceId"
-          :value="camera.deviceId"
-        >
-          {{ camera.label }}
-        </option>
-      </select>
-    </div>
-
     <video
       ref="video"
       width="300"
@@ -20,24 +7,47 @@
       style="border: 1px solid gray"
     ></video>
 
+    <br />
+
+    <Dropdown
+      v-model="selectedCamera"
+      :options="cameras"
+      optionLabel="label"
+      placeholder="Select a camera"
+      @change="cameraChanged"
+    />
+
     <div class="result">{{ result }}</div>
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent } from "vue";
+
+// Components
+import Dropdown from "primevue/dropdown";
+
+// Services
 import { BrowserQRCodeReader, VideoInputDevice } from "@zxing/library";
 
 const codeReader = new BrowserQRCodeReader();
 
 export default defineComponent({
   name: "QrScanner",
+  components: {
+    Dropdown
+  },
   data() {
     return {
       cameras: [] as VideoInputDevice[],
-      selectedCamera: "",
+      selectedCamera: null as VideoInputDevice | null,
       result: ""
     };
+  },
+  computed: {
+    cameraSelection() {
+      return "";
+    }
   },
   mounted() {
     this.initCameras();
@@ -49,24 +59,32 @@ export default defineComponent({
         this.result = "No camera found.";
       } else {
         this.cameras = videoInputDevices;
-        this.selectedCamera = this.cameras[0].deviceId;
+        this.selectedCamera = this.cameras[0];
         this.scan();
       }
     },
 
-    cameraChanged(event: Event) {
-      const target = event.target as HTMLSelectElement;
-      this.selectedCamera = target.value;
-      this.scan();
+    async scan() {
+      if (!this.selectedCamera) {
+        this.result = "No camera selected.";
+        return;
+      }
+
+      const videoElement = this.$refs.video as HTMLVideoElement;
+      try {
+        const result = await codeReader.decodeFromInputVideoDevice(
+          this.selectedCamera.deviceId,
+          videoElement
+        );
+        this.result = result.getText();
+      } catch (err) {
+        // ignore
+      }
     },
 
-    async scan() {
-      const videoElement = this.$refs.video as HTMLVideoElement;
-      const result = await codeReader.decodeFromInputVideoDevice(
-        this.selectedCamera,
-        videoElement
-      );
-      this.result = result.getText();
+    cameraChanged() {
+      codeReader.reset();
+      this.scan();
     }
   }
 });

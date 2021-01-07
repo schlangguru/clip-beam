@@ -3,15 +3,20 @@
     <div class="content">
       <div v-if="connectToDevice">
         <qr-scanner></qr-scanner>
-        <button type="button" @click="connectToDevice = false">
-          Show my connection info
-        </button>
+        <Button
+          icon="pi pi-th-large"
+          label="Show my connection info"
+          @click="connectToDevice = false"
+        >
+        </Button>
       </div>
       <div v-else>
         <qr-code :value="uuid"></qr-code>
-        <button type="button" @click="connectToDevice = true">
-          Connect to a device
-        </button>
+        <Button
+          icon="pi pi-cloud-upload"
+          label="Connect to a device"
+          @click="connectToDevice = true"
+        ></Button>
       </div>
     </div>
   </div>
@@ -21,6 +26,7 @@
 import { defineComponent } from "vue";
 
 // Compoenents
+import Button from "primevue/button";
 import QrCode from "../components/QrCode.vue";
 import QrScanner from "../components/QrScanner.vue";
 
@@ -30,6 +36,7 @@ import { v4 as uuidv4 } from "uuid";
 export default defineComponent({
   name: "Home",
   components: {
+    Button,
     QrCode,
     QrScanner
   },
@@ -38,9 +45,6 @@ export default defineComponent({
       uuid: uuidv4(),
       connectToDevice: false
     };
-  },
-  mounted() {
-
   }
 });
 </script>
