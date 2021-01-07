@@ -1,14 +1,25 @@
 <template>
   <div class="wrapper">
     <div class="content">
-      <qr-code value="blub"></qr-code>
-      <qr-scanner></qr-scanner>
+      <div v-if="connectToDevice">
+        <qr-scanner></qr-scanner>
+        <button type="button" @click="connectToDevice = false">
+          Show my connection info
+        </button>
+      </div>
+      <div v-else>
+        <qr-code :value="uuid"></qr-code>
+        <button type="button" @click="connectToDevice = true">
+          Connect to a device
+        </button>
+      </div>
     </div>
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent } from "vue";
+import { v4 as uuidv4 } from "uuid";
 import QrCode from "../components/QrCode.vue";
 import QrScanner from "../components/QrScanner.vue";
 
@@ -17,6 +28,12 @@ export default defineComponent({
   components: {
     QrCode,
     QrScanner
+  },
+  data() {
+    return {
+      uuid: uuidv4(),
+      connectToDevice: false
+    };
   }
 });
 </script>
