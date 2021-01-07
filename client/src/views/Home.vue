@@ -19,9 +19,13 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import { v4 as uuidv4 } from "uuid";
+
+// Compoenents
 import QrCode from "../components/QrCode.vue";
 import QrScanner from "../components/QrScanner.vue";
+
+// Services
+import { v4 as uuidv4 } from "uuid";
 
 export default defineComponent({
   name: "Home",
@@ -34,6 +38,9 @@ export default defineComponent({
       uuid: uuidv4(),
       connectToDevice: false
     };
+  },
+  mounted() {
+
   }
 });
 </script>
