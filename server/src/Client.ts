@@ -74,7 +74,7 @@ export default class Client {
     const peer = this.server.clients.get(peerUuid);
     if (peer) {
       peer.websocket.send(JSON.stringify({
-        type: SignalingType.OFFER,
+        type: SignalingType.ANSWER,
         payload: {
           answer: answer,
           peerUuid: this.uuid
