@@ -6,7 +6,7 @@ import {
   ICECandidatePayload
 } from "./SignalingMessage";
 
-const SIGNALING_SERVER = "ws://192.168.178.44:9090";
+const SIGNALING_SERVER = "ws://localhost:9090";
 const RTC_CONNECTION_CONFIG = {
   iceServers: [
     {
@@ -19,8 +19,6 @@ const DATA_CHANNEL_NAME = "data-channel";
 class WebRTCService {
   signalingSocket: WebSocket;
   rtcPeerConnection: RTCPeerConnection;
-  uuid: string | null = null;
-  peerUuid: string | null = null;
   dataChannel: RTCDataChannel | null = null;
   connectedCallbacks: (() => void)[] = [];
   messageCallbacks: ((event: MessageEvent) => void)[] = [];
@@ -44,7 +42,6 @@ class WebRTCService {
 
   registerClient(uuid: string) {
     this.signalingSocket.addEventListener("open", () => {
-      this.uuid = uuid;
       this.sendSignal({
         type: "REGISTER",
         payload: uuid
@@ -53,15 +50,13 @@ class WebRTCService {
   }
 
   async connectToDevice(peerUuid: string) {
-    this.peerUuid = peerUuid;
-
     this.rtcPeerConnection.onicecandidate = event => {
       if (event.candidate) {
         this.sendSignal({
           type: "ICE_CANDIDATE",
           payload: {
             candidate: event.candidate,
-            peerUuid: this.peerUuid
+            peerUuid: peerUuid
           }
         });
       }
@@ -75,7 +70,7 @@ class WebRTCService {
       type: "OFFER",
       payload: {
         offer: offer,
-        peerUuid: this.peerUuid
+        peerUuid: peerUuid
       }
     });
   }
@@ -96,7 +91,6 @@ class WebRTCService {
   }
 
   async onOffer(peerUuid: string, offer: RTCSessionDescriptionInit) {
-    this.peerUuid = peerUuid;
     this.rtcPeerConnection.setRemoteDescription(
       new RTCSessionDescription(offer)
     );
@@ -108,7 +102,7 @@ class WebRTCService {
       type: SignalingType.ANSWER,
       payload: {
         answer: answer,
-        peerUuid: this.peerUuid
+        peerUuid: peerUuid
       }
     });
   }
