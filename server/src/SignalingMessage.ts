@@ -3,7 +3,7 @@ export enum SignalingType {
   OFFER = "OFFER",
   ERROR = "ERROR",
   ANSWER = "ANSWER",
-  ICE_CANDIATE = "ICE_CANDIATE"
+  ICE_CANDIDATE = "ICE_CANDIDATE"
 }
 
 export interface OfferPayload {

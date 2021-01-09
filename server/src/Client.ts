@@ -34,7 +34,7 @@ export default class Client {
     } else if(signalingMsg.type == SignalingType.ANSWER) {
       const answerPayload = signalingMsg.payload as AnswerPayload;
       this.answer(answerPayload.peerUuid, answerPayload.answer);
-    } else if(signalingMsg.type == SignalingType.ICE_CANDIATE) {
+    } else if(signalingMsg.type == SignalingType.ICE_CANDIDATE) {
       const icePayload = signalingMsg.payload as ICECandidatePayload;
       this.iceCandidate(icePayload.peerUuid, icePayload.candidate);
     }else {
@@ -88,11 +88,11 @@ export default class Client {
   }
 
 
-  iceCandidate(peerUuid: string, candidate: RTCIceCandidate) {
+  iceCandidate(peerUuid: string, candidate: RTCIceCandidateInit) {
     const peer = this.server.clients.get(peerUuid);
     if (peer) {
       peer.websocket.send(JSON.stringify({
-        type: SignalingType.ICE_CANDIATE,
+        type: SignalingType.ICE_CANDIDATE,
         payload: {
           candidate: candidate,
           peerUuid: this.uuid
