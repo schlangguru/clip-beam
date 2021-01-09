@@ -54,9 +54,7 @@ import QrScanner from "../components/QrScanner.vue";
 
 // Services
 import { v4 as uuidv4 } from "uuid";
-import { WebRTCService } from "../services/WebRTCService";
-
-const webRTCService = new WebRTCService();
+import webRTCService from "../services/WebRTCService";
 
 export default defineComponent({
   name: "Home",
@@ -75,6 +73,9 @@ export default defineComponent({
   },
   mounted() {
     webRTCService.registerClient(this.myUuid);
+    webRTCService.addConnectedCallback(() => {
+      this.$router.push("room");
+    });
   },
   methods: {
     copyUuidToClipboard() {

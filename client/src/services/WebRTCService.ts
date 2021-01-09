@@ -16,11 +16,14 @@ const RTC_CONNECTION_CONFIG = {
 };
 const DATA_CHANNEL_NAME = "data-channel";
 
-export class WebRTCService {
+class WebRTCService {
   signalingSocket: WebSocket;
   rtcPeerConnection: RTCPeerConnection;
   uuid: string | null = null;
   peerUuid: string | null = null;
+  dataChannel: RTCDataChannel | null = null;
+  connectedCallbacks: (() => void)[] = [];
+  messageCallbacks: ((event: MessageEvent) => void)[] = [];
 
   constructor() {
     this.signalingSocket = new WebSocket(SIGNALING_SERVER);
@@ -29,6 +32,14 @@ export class WebRTCService {
     );
 
     this.rtcPeerConnection = new RTCPeerConnection(RTC_CONNECTION_CONFIG);
+  }
+
+  addConnectedCallback(cb: () => void) {
+    this.connectedCallbacks.push(cb);
+  }
+
+  addMessageCallback(cb: (event: MessageEvent) => void) {
+    this.messageCallbacks.push(cb);
   }
 
   registerClient(uuid: string) {
@@ -125,11 +136,27 @@ export class WebRTCService {
   }
 
   onDataChannelOpened(event: RTCDataChannelEvent) {
-    console.log("Data Channel opened");
-    const dataChannel = event.channel || event.target;
-    dataChannel.onmessage = event => {
-      console.log("Got message:", event.data);
+    this.dataChannel = event.channel || event.target;
+    this.dataChannel.onmessage = event => {
+      for (const cb of this.messageCallbacks) {
+        cb(event);
+      }
     };
-    dataChannel.send(`Hi my name is ${this.uuid}`);
+
+    for (const cb of this.connectedCallbacks) {
+      cb();
+    }
+  }
+
+  sendMessage(msg: string) {
+    if (this.dataChannel) {
+      this.dataChannel.send(msg);
+    } else {
+      console.error("No data channel open.");
+    }
   }
 }
+
+// Export Singleton
+const service = new WebRTCService();
+export default service;
