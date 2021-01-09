@@ -3,7 +3,7 @@
     <div class="content">
       <div class="card">
         <div v-if="showScanner">
-          <qr-scanner></qr-scanner>
+          <qr-scanner @scan="onQrScan"></qr-scanner>
           <div class="p-inputgroup">
             <InputText placeholder="Enter ID manually" v-model="peerUuid" />
             <Button
@@ -91,6 +91,11 @@ export default defineComponent({
       textArea.select();
       document.execCommand("copy");
       document.body.removeChild(textArea);
+    },
+
+    onQrScan(uuid: string) {
+      this.peerUuid = uuid;
+      this.connectToDevice();
     },
 
     connectToDevice() {

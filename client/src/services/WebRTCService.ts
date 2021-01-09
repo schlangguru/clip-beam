@@ -6,7 +6,7 @@ import {
   ICECandidatePayload
 } from "./SignalingMessage";
 
-const SIGNALING_SERVER = "ws://localhost:9090";
+const SIGNALING_SERVER = "ws://192.168.178.44:9090";
 const RTC_CONNECTION_CONFIG = {
   iceServers: [
     {
