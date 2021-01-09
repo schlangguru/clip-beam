@@ -2,11 +2,15 @@
   <div class="wrapper">
     <div class="content">
       <div class="card">
-        <div v-if="connectToDevice">
+        <div v-if="showScanner">
           <qr-scanner></qr-scanner>
           <div class="p-inputgroup">
-            <InputText placeholder="Enter ID manually" />
-            <Button icon="pi pi-caret-right" class="p-button-success" />
+            <InputText placeholder="Enter ID manually" v-model="peerUuid" />
+            <Button
+              icon="pi pi-caret-right"
+              class="p-button-success"
+              @click="connectToDevice"
+            />
           </div>
         </div>
         <div v-else>
@@ -22,17 +26,17 @@
 
       <div class="card">
         <Button
-          v-if="connectToDevice"
+          v-if="showScanner"
           icon="pi pi-th-large"
           label="Show my connection info"
-          @click="connectToDevice = false"
+          @click="showScanner = false"
         ></Button>
 
         <Button
           v-else
           icon="pi pi-cloud-upload"
           label="Connect to a device"
-          @click="connectToDevice = true"
+          @click="showScanner = true"
         ></Button>
       </div>
     </div>
@@ -50,7 +54,7 @@ import QrScanner from "../components/QrScanner.vue";
 
 // Services
 import { v4 as uuidv4 } from "uuid";
-import { WebRTCService } from "../services/WebRTCService"
+import { WebRTCService } from "../services/WebRTCService";
 
 const webRTCService = new WebRTCService();
 
@@ -66,7 +70,7 @@ export default defineComponent({
     return {
       myUuid: uuidv4(),
       peerUuid: null as string | null,
-      connectToDevice: false
+      showScanner: false
     };
   },
   mounted() {
@@ -87,6 +91,12 @@ export default defineComponent({
       textArea.select();
       document.execCommand("copy");
       document.body.removeChild(textArea);
+    },
+
+    connectToDevice() {
+      if (this.peerUuid) {
+        webRTCService.connectToDevice(this.peerUuid);
+      }
     }
   }
 });
