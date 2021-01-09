@@ -14,6 +14,7 @@ const RTC_CONNECTION_CONFIG = {
     }
   ]
 };
+const DATA_CHANNEL_NAME = "data-channel";
 
 export class WebRTCService {
   signalingSocket: WebSocket;
@@ -28,15 +29,6 @@ export class WebRTCService {
     );
 
     this.rtcPeerConnection = new RTCPeerConnection(RTC_CONNECTION_CONFIG);
-    this.rtcPeerConnection.onicecandidate = event => {
-      if (event.candidate) {
-        this.sendSignal({
-          type: "ICE_CANDIDATE",
-          payload: event.candidate,
-          peerUuid: this.peerUuid
-        });
-      }
-    };
   }
 
   registerClient(uuid: string) {
@@ -49,8 +41,23 @@ export class WebRTCService {
     });
   }
 
-  async connectToDevice(uuid: string) {
-    this.peerUuid = uuid;
+  async connectToDevice(peerUuid: string) {
+    this.peerUuid = peerUuid;
+
+    this.rtcPeerConnection.onicecandidate = event => {
+      if (event.candidate) {
+        this.sendSignal({
+          type: "ICE_CANDIDATE",
+          payload: {
+            candidate: event.candidate,
+            peerUuid: this.peerUuid
+          }
+        });
+      }
+    };
+
+    this.initDataChannel();
+
     const offer = await this.rtcPeerConnection.createOffer();
     this.rtcPeerConnection.setLocalDescription(offer);
     this.sendSignal({
@@ -71,18 +78,19 @@ export class WebRTCService {
     } else if (message.type === SignalingType.ANSWER) {
       const payload = message.payload as AnswerPayload;
       this.onAnswer(payload.answer);
-    } else if (message.type === SignalingType.ICE_CANDIATE) {
+    } else if (message.type === SignalingType.ICE_CANDIDATE) {
       const payload = message.payload as ICECandidatePayload;
       this.onIceCandidate(payload.candidate);
     }
   }
 
   async onOffer(peerUuid: string, offer: RTCSessionDescriptionInit) {
-    console.log("Got offer");
     this.peerUuid = peerUuid;
     this.rtcPeerConnection.setRemoteDescription(
       new RTCSessionDescription(offer)
     );
+    this.rtcPeerConnection.ondatachannel = event =>
+      this.onDataChannelOpened(event);
     const answer = await this.rtcPeerConnection.createAnswer();
     this.rtcPeerConnection.setLocalDescription(answer);
     this.sendSignal({
@@ -95,16 +103,33 @@ export class WebRTCService {
   }
 
   async onAnswer(answer: RTCSessionDescriptionInit) {
-    console.log("Got answer");
     this.rtcPeerConnection.setRemoteDescription(answer);
   }
 
-  async onIceCandidate(candidate: RTCIceCandidate) {
-    console.log("Got ice");
-    this.rtcPeerConnection.addIceCandidate(candidate);
+  async onIceCandidate(candidate: RTCIceCandidateInit) {
+    this.rtcPeerConnection.addIceCandidate(new RTCIceCandidate(candidate));
   }
 
   sendSignal(signal: object) {
     this.signalingSocket.send(JSON.stringify(signal));
+  }
+
+  initDataChannel() {
+    const options = { ordered: true };
+    const dataChannel = this.rtcPeerConnection.createDataChannel(
+      DATA_CHANNEL_NAME,
+      options
+    );
+    dataChannel.onopen = event =>
+      this.onDataChannelOpened(event as RTCDataChannelEvent);
+  }
+
+  onDataChannelOpened(event: RTCDataChannelEvent) {
+    console.log("Data Channel opened");
+    const dataChannel = event.channel || event.target;
+    dataChannel.onmessage = event => {
+      console.log("Got message:", event.data);
+    };
+    dataChannel.send(`Hi my name is ${this.uuid}`);
   }
 }
