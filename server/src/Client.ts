@@ -17,7 +17,6 @@ export default class Client {
   }
 
   onMessage(message: string) {
-    console.log("Signal:", message);
     let signalingMsg;
     try {
       signalingMsg = JSON.parse(message) as SignalingMsg;

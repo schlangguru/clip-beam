@@ -17,7 +17,7 @@ export interface AnswerPayload {
 }
 
 export interface ICECandidatePayload {
-    candidate: RTCIceCandidate,
+    candidate: RTCIceCandidateInit,
     peerUuid: string
 }
 
