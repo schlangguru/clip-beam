@@ -21,10 +21,10 @@ export default class WebRTCSignalingServer {
     try {
       signalingMsg = JSON.parse(message) as SignalingMsg;
     } catch (e) {
-      websocket.send({
+      websocket.send(JSON.stringify({
         type: SignalingType.ERROR,
         payload: `Invalid message: ${message}`
-      });
+      }));
       return;
     }
 

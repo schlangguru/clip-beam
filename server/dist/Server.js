@@ -21,10 +21,10 @@ class WebRTCSignalingServer {
             signalingMsg = JSON.parse(message);
         }
         catch (e) {
-            websocket.send({
+            websocket.send(JSON.stringify({
                 type: SignalingMessage_1.SignalingType.ERROR,
                 payload: `Invalid message: ${message}`
-            });
+            }));
             return;
         }
         if (signalingMsg.type == SignalingMessage_1.SignalingType.REGISTER) {

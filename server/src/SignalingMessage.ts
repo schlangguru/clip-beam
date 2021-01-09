@@ -7,17 +7,17 @@ export enum SignalingType {
 }
 
 export interface OfferPayload {
-    offer: RTCOfferOptions,
+    offer: RTCSessionDescriptionInit,
     peerUuid: string
 }
 
 export interface AnswerPayload {
-    answer: RTCAnswerOptions,
+    answer: RTCSessionDescriptionInit,
     peerUuid: string
 }
 
 export interface ICECandidatePayload {
-    candidate: RTCIceParameters,
+    candidate: RTCIceCandidate,
     peerUuid: string
 }
 

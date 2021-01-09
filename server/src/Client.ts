@@ -17,14 +17,15 @@ export default class Client {
   }
 
   onMessage(message: string) {
+    console.log("Signal:", message);
     let signalingMsg;
     try {
       signalingMsg = JSON.parse(message) as SignalingMsg;
     } catch (e) {
-      this.websocket.send({
+      this.websocket.send(JSON.stringify({
         type: SignalingType.ERROR,
         payload: `Invalid message: ${message}`
-      });
+      }));
       return;
     }
 
@@ -51,58 +52,58 @@ export default class Client {
    *
    * @param websocket
    */
-  offer(peerUuid: string, offer: RTCOfferOptions) {
+  offer(peerUuid: string, offer: RTCSessionDescriptionInit) {
     const peer = this.server.clients.get(peerUuid);
     if (peer) {
-      peer.websocket.send({
+      peer.websocket.send(JSON.stringify({
         type: SignalingType.OFFER,
         payload: {
           offer: offer,
           peerUuid: this.uuid
         }
-      })
+      }))
     } else {
-      this.websocket.send({
+      this.websocket.send(JSON.stringify({
         type: SignalingType.ERROR,
         payload: `No peer with id ${peerUuid} found`,
-      });
+      }));
     }
   }
 
-  answer(peerUuid: string, answer: RTCAnswerOptions) {
+  answer(peerUuid: string, answer: RTCSessionDescriptionInit) {
     const peer = this.server.clients.get(peerUuid);
     if (peer) {
-      peer.websocket.send({
+      peer.websocket.send(JSON.stringify({
         type: SignalingType.OFFER,
         payload: {
           answer: answer,
           peerUuid: this.uuid
         }
-      })
+      }));
     } else {
-      this.websocket.send({
+      this.websocket.send(JSON.stringify({
         type: SignalingType.ERROR,
         payload: `No peer with id ${peerUuid} found`,
-      });
+      }));
     }
   }
 
 
-  iceCandidate(peerUuid: string, candidate: RTCIceParameters) {
+  iceCandidate(peerUuid: string, candidate: RTCIceCandidate) {
     const peer = this.server.clients.get(peerUuid);
     if (peer) {
-      peer.websocket.send({
+      peer.websocket.send(JSON.stringify({
         type: SignalingType.ICE_CANDIATE,
         payload: {
           candidate: candidate,
           peerUuid: this.uuid
         }
-      })
+      }));
     } else {
-      this.websocket.send({
+      this.websocket.send(JSON.stringify({
         type: SignalingType.ERROR,
         payload: `No peer with id ${peerUuid} found`,
-      });
+      }));
     }
   }
 

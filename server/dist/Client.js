@@ -10,15 +10,16 @@ class Client {
         this.websocket.on("close", () => this.onClose());
     }
     onMessage(message) {
+        console.log("Signal:", message);
         let signalingMsg;
         try {
             signalingMsg = JSON.parse(message);
         }
         catch (e) {
-            this.websocket.send({
+            this.websocket.send(JSON.stringify({
                 type: SignalingMessage_1.SignalingType.ERROR,
                 payload: `Invalid message: ${message}`
-            });
+            }));
             return;
         }
         if (signalingMsg.type == SignalingMessage_1.SignalingType.OFFER) {
@@ -48,55 +49,55 @@ class Client {
     offer(peerUuid, offer) {
         const peer = this.server.clients.get(peerUuid);
         if (peer) {
-            peer.websocket.send({
+            peer.websocket.send(JSON.stringify({
                 type: SignalingMessage_1.SignalingType.OFFER,
                 payload: {
                     offer: offer,
                     peerUuid: this.uuid
                 }
-            });
+            }));
         }
         else {
-            this.websocket.send({
+            this.websocket.send(JSON.stringify({
                 type: SignalingMessage_1.SignalingType.ERROR,
                 payload: `No peer with id ${peerUuid} found`,
-            });
+            }));
         }
     }
     answer(peerUuid, answer) {
         const peer = this.server.clients.get(peerUuid);
         if (peer) {
-            peer.websocket.send({
+            peer.websocket.send(JSON.stringify({
                 type: SignalingMessage_1.SignalingType.OFFER,
                 payload: {
                     answer: answer,
                     peerUuid: this.uuid
                 }
-            });
+            }));
         }
         else {
-            this.websocket.send({
+            this.websocket.send(JSON.stringify({
                 type: SignalingMessage_1.SignalingType.ERROR,
                 payload: `No peer with id ${peerUuid} found`,
-            });
+            }));
         }
     }
     iceCandidate(peerUuid, candidate) {
         const peer = this.server.clients.get(peerUuid);
         if (peer) {
-            peer.websocket.send({
+            peer.websocket.send(JSON.stringify({
                 type: SignalingMessage_1.SignalingType.ICE_CANDIATE,
                 payload: {
                     candidate: candidate,
                     peerUuid: this.uuid
                 }
-            });
+            }));
         }
         else {
-            this.websocket.send({
+            this.websocket.send(JSON.stringify({
                 type: SignalingMessage_1.SignalingType.ERROR,
                 payload: `No peer with id ${peerUuid} found`,
-            });
+            }));
         }
     }
 }
