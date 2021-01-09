@@ -1,7 +1,6 @@
 import Websocket from "ws";
-import { URL } from "url";
 import Client from "./Client";
-
+import { SignalingType, SignalingMsg } from "./SignalingMessage";
 
 export default class WebRTCSignalingServer {
 
@@ -10,7 +9,28 @@ export default class WebRTCSignalingServer {
 
   constructor(port: number) {
     this.wsServer = new Websocket.Server({port: port});
-    this.wsServer.on("connection", (socket) => this.registerClient(socket));
+    this.wsServer.on("connection", (socket) => this.onConnection(socket));
+  }
+
+  onConnection(websocket: Websocket) {
+    websocket.on("message", (msg) => this.onMessage(websocket, msg.toString()));
+  }
+
+  onMessage(websocket: Websocket, message: string) {
+    let signalingMsg;
+    try {
+      signalingMsg = JSON.parse(message) as SignalingMsg;
+    } catch (e) {
+      websocket.send({
+        type: SignalingType.ERROR,
+        payload: `Invalid message: ${message}`
+      });
+      return;
+    }
+
+    if (signalingMsg.type == SignalingType.REGISTER) {
+      this.registerClient(websocket, signalingMsg.payload as string);
+    }
   }
 
   /**
@@ -19,20 +39,9 @@ export default class WebRTCSignalingServer {
    * @param uuid
    * @param websocket
    */
-  registerClient(websocket: Websocket) {
-    const url = new URL(websocket.url);
-    const uuid = url.searchParams.get("uuid");
-
-    if (uuid) {
-      const client = new Client(this, uuid, websocket);
-      this.clients.set(uuid, client);
-    } else {
-      websocket.send({
-        type: SignalingType.ERROR,
-        payload: "Missing UUID in url query."
-      });
-      websocket.close();
-    }
+  registerClient(websocket: Websocket, uuid: string) {
+    const client = new Client(this, uuid, websocket);
+    this.clients.set(uuid, client);
   }
 
   unregisterClient(uuid: string) {

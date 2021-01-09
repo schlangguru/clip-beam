@@ -5,20 +5,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const ws_1 = __importDefault(require("ws"));
 const Client_1 = __importDefault(require("./Client"));
-const clients = {};
-var SignalingType;
-(function (SignalingType) {
-    SignalingType["REGISTER"] = "register";
-})(SignalingType || (SignalingType = {}));
+const SignalingMessage_1 = require("./SignalingMessage");
 class WebRTCSignalingServer {
     constructor(port) {
-        this.clients = new Set();
+        this.clients = new Map();
         this.wsServer = new ws_1.default.Server({ port: port });
-        this.wsServer.on("connection", (socket) => this.initWebsocket(socket));
+        this.wsServer.on("connection", (socket) => this.onConnection(socket));
     }
-    initWebsocket(websocket) {
+    onConnection(websocket) {
         websocket.on("message", (msg) => this.onMessage(websocket, msg.toString()));
-        websocket.on("close", () => this.onClose(websocket));
     }
     onMessage(websocket, message) {
         let signalingMsg;
@@ -26,25 +21,28 @@ class WebRTCSignalingServer {
             signalingMsg = JSON.parse(message);
         }
         catch (e) {
-            websocket.send(`Invalid message: ${message}`);
+            websocket.send({
+                type: SignalingMessage_1.SignalingType.ERROR,
+                payload: `Invalid message: ${message}`
+            });
             return;
         }
-        const mapping = {
-            [SignalingType.REGISTER]: this.registerClient.bind(this)
-        };
-        mapping[signalingMsg.type](signalingMsg.payload, websocket);
-    }
-    onClose(websocket) {
-        for (let client of this.clients) {
-            const state = client.websocket.readyState;
-            if (state == ws_1.default.CLOSED || state == ws_1.default.CLOSING) {
-                this.clients.delete(client);
-            }
+        if (signalingMsg.type == SignalingMessage_1.SignalingType.REGISTER) {
+            this.registerClient(websocket, signalingMsg.payload);
         }
     }
-    registerClient(uuid, websocket) {
-        const client = new Client_1.default(uuid, websocket);
-        this.clients.add(client);
+    /**
+     * Register client with uuid.
+     *
+     * @param uuid
+     * @param websocket
+     */
+    registerClient(websocket, uuid) {
+        const client = new Client_1.default(this, uuid, websocket);
+        this.clients.set(uuid, client);
+    }
+    unregisterClient(uuid) {
+        this.clients.delete(uuid);
     }
 }
 exports.default = WebRTCSignalingServer;

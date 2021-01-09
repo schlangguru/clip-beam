@@ -1,5 +1,6 @@
 import WebSocket from "ws";
 import WebRTCSignalingServer from "./Server";
+import { SignalingType, SignalingMsg, OfferPayload, AnswerPayload, ICECandidatePayload } from "./SignalingMessage";
 
 export default class Client {
 
@@ -33,9 +34,9 @@ export default class Client {
     } else if(signalingMsg.type == SignalingType.ANSWER) {
       const answerPayload = signalingMsg.payload as AnswerPayload;
       this.answer(answerPayload.peerUuid, answerPayload.answer);
-    } else if(signalingMsg.type == SignalingType.ICE) {
-      const icePayload = signalingMsg.payload as ICEPayload;
-      this.ice(icePayload.peerUuid, icePayload.candidate);
+    } else if(signalingMsg.type == SignalingType.ICE_CANDIATE) {
+      const icePayload = signalingMsg.payload as ICECandidatePayload;
+      this.iceCandidate(icePayload.peerUuid, icePayload.candidate);
     }else {
       console.log(`Unknown signaling message type '${signalingMsg.type}'`);
     }
@@ -87,11 +88,11 @@ export default class Client {
   }
 
 
-  ice(peerUuid: string, candidate: RTCIceParameters) {
+  iceCandidate(peerUuid: string, candidate: RTCIceParameters) {
     const peer = this.server.clients.get(peerUuid);
     if (peer) {
       peer.websocket.send({
-        type: SignalingType.ICE,
+        type: SignalingType.ICE_CANDIATE,
         payload: {
           candidate: candidate,
           peerUuid: this.uuid

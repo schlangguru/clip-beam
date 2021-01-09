@@ -1,26 +1,27 @@
-enum SignalingType {
+export enum SignalingType {
+  REGISTER = "REGISTER",
   OFFER = "OFFER",
   ERROR = "ERROR",
   ANSWER = "ANSWER",
-  ICE = "ICE"
+  ICE_CANDIATE = "ICE_CANDIATE"
 }
 
-interface OfferPayload {
+export interface OfferPayload {
     offer: RTCOfferOptions,
     peerUuid: string
 }
 
-interface AnswerPayload {
+export interface AnswerPayload {
     answer: RTCAnswerOptions,
     peerUuid: string
 }
 
-interface ICEPayload {
+export interface ICECandidatePayload {
     candidate: RTCIceParameters,
     peerUuid: string
 }
 
-interface SignalingMsg {
+export interface SignalingMsg {
   type: SignalingType;
-  payload: OfferPayload | AnswerPayload | ICEPayload;
+  payload: string | OfferPayload | AnswerPayload | ICECandidatePayload;
 }
