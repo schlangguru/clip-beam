@@ -19,10 +19,8 @@ class WebRTCSignalingServer {
     initWebsocket(websocket) {
         websocket.on("message", (msg) => this.onMessage(websocket, msg.toString()));
         websocket.on("close", () => this.onClose(websocket));
-        websocket.send("Websocket connected.");
     }
     onMessage(websocket, message) {
-        console.log("Message recieved", message);
         let signalingMsg;
         try {
             signalingMsg = JSON.parse(message);
