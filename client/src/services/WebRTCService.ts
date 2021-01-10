@@ -5,6 +5,7 @@ import {
   AnswerPayload,
   ICECandidatePayload
 } from "./SignalingMessage";
+import { EventDispatcher } from "./EventDispatcher";
 
 const SIGNALING_SERVER = "ws://localhost:9090";
 const RTC_CONNECTION_CONFIG = {
@@ -17,11 +18,12 @@ const RTC_CONNECTION_CONFIG = {
 const DATA_CHANNEL_NAME = "data-channel";
 
 class WebRTCService {
-  signalingSocket: WebSocket;
-  rtcPeerConnection: RTCPeerConnection;
-  dataChannel: RTCDataChannel | null = null;
-  connectedCallbacks: (() => void)[] = [];
-  messageCallbacks: ((event: MessageEvent) => void)[] = [];
+  private readonly signalingSocket: WebSocket;
+  private readonly rtcPeerConnection: RTCPeerConnection;
+  private dataChannel?: RTCDataChannel;
+
+  public readonly onConnected = new EventDispatcher<void>();
+  public readonly onData = new EventDispatcher<string>();
 
   constructor() {
     this.signalingSocket = new WebSocket(SIGNALING_SERVER);
@@ -32,15 +34,7 @@ class WebRTCService {
     this.rtcPeerConnection = new RTCPeerConnection(RTC_CONNECTION_CONFIG);
   }
 
-  addConnectedCallback(cb: () => void) {
-    this.connectedCallbacks.push(cb);
-  }
-
-  addMessageCallback(cb: (event: MessageEvent) => void) {
-    this.messageCallbacks.push(cb);
-  }
-
-  registerClient(uuid: string) {
+  public registerClient(uuid: string) {
     this.signalingSocket.addEventListener("open", () => {
       this.sendSignal({
         type: "REGISTER",
@@ -49,7 +43,7 @@ class WebRTCService {
     });
   }
 
-  async connectToDevice(peerUuid: string) {
+  public async connectToDevice(peerUuid: string) {
     this.rtcPeerConnection.onicecandidate = event => {
       if (event.candidate) {
         this.sendSignal({
@@ -75,7 +69,15 @@ class WebRTCService {
     });
   }
 
-  onSignalingMessage(message: SignalingMsg) {
+  public sendMessage(msg: string) {
+    if (this.dataChannel) {
+      this.dataChannel.send(msg);
+    } else {
+      throw "No data channel established.";
+    }
+  }
+
+  private onSignalingMessage(message: SignalingMsg) {
     if (message.type == SignalingType.ERROR) {
       console.error(message.payload);
     } else if (message.type === SignalingType.OFFER) {
@@ -90,7 +92,7 @@ class WebRTCService {
     }
   }
 
-  async onOffer(peerUuid: string, offer: RTCSessionDescriptionInit) {
+  private async onOffer(peerUuid: string, offer: RTCSessionDescriptionInit) {
     this.rtcPeerConnection.setRemoteDescription(
       new RTCSessionDescription(offer)
     );
@@ -107,19 +109,19 @@ class WebRTCService {
     });
   }
 
-  async onAnswer(answer: RTCSessionDescriptionInit) {
+  private async onAnswer(answer: RTCSessionDescriptionInit) {
     this.rtcPeerConnection.setRemoteDescription(answer);
   }
 
-  async onIceCandidate(candidate: RTCIceCandidateInit) {
+  private async onIceCandidate(candidate: RTCIceCandidateInit) {
     this.rtcPeerConnection.addIceCandidate(new RTCIceCandidate(candidate));
   }
 
-  sendSignal(signal: object) {
+  private sendSignal(signal: object) {
     this.signalingSocket.send(JSON.stringify(signal));
   }
 
-  initDataChannel() {
+  private initDataChannel() {
     const options = { ordered: true };
     const dataChannel = this.rtcPeerConnection.createDataChannel(
       DATA_CHANNEL_NAME,
@@ -129,25 +131,13 @@ class WebRTCService {
       this.onDataChannelOpened(event as RTCDataChannelEvent);
   }
 
-  onDataChannelOpened(event: RTCDataChannelEvent) {
+  private onDataChannelOpened(event: RTCDataChannelEvent) {
     this.dataChannel = event.channel || event.target;
     this.dataChannel.onmessage = event => {
-      for (const cb of this.messageCallbacks) {
-        cb(event);
-      }
+      this.onData.dispatch(event.data);
     };
 
-    for (const cb of this.connectedCallbacks) {
-      cb();
-    }
-  }
-
-  sendMessage(msg: string) {
-    if (this.dataChannel) {
-      this.dataChannel.send(msg);
-    } else {
-      console.error("No data channel open.");
-    }
+    this.onConnected.dispatch();
   }
 }
 

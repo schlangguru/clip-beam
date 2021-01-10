@@ -73,7 +73,7 @@ export default defineComponent({
   },
   mounted() {
     webRTCService.registerClient(this.myUuid);
-    webRTCService.addConnectedCallback(() => {
+    webRTCService.onConnected.addListener(() => {
       this.$router.push("room");
     });
   },
