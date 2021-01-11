@@ -1,17 +1,8 @@
 <template>
-  <div>
+  <div class="container">
     <Message v-if="error" severity="error" :closable="false">{{
       error
     }}</Message>
-
-    <video
-      ref="video"
-      width="300"
-      height="200"
-      style="border: 1px solid gray"
-    ></video>
-
-    <br />
 
     <Dropdown
       v-model="selectedCamera"
@@ -20,6 +11,8 @@
       placeholder="Select a camera"
       @change="cameraChanged"
     />
+
+    <video ref="video"></video>
   </div>
 </template>
 
@@ -95,4 +88,16 @@ export default defineComponent({
 });
 </script>
 
-<style scoped></style>
+<style scoped>
+.container {
+  display: flex;
+  flex-direction: column;
+}
+
+video {
+  border: 1px solid gray;
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+}
+</style>
