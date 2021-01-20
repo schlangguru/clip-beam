@@ -1,16 +1,50 @@
-# Clip Beam
+<img src="https://raw.githubusercontent.com/schlangguru/clip-beam-client/master/public/img/logo.svg" alt="clip-beam logo" title="Clip Beam" align="right" height="50" />
 
-> Under active development.
+# Clip Beam Signaling Server
 
-Clip Beam is a web application that lets you share files and text easily between two devices.
+This is the signaling server of Clip Beam. To get an overview of the application visit the [client](https://github.com/schlangguru/clip-beam-client) repo.
 
-Simply connect two devices by scanning a QR code and start sharing data.
+The signaling server is responsible to initiate the WebRTC connection for Clip Beam.
 
-Inspired by common messaging app web clients like Treema Web and [SnapDrop](https://github.com/RobinLinus/snapdrop).
+![Clip Beam](https://raw.githubusercontent.com/schlangguru/clip-beam-client/master/assets/demo.png)
 
+## Table of content
 
-## Usage
-// TODO
+- [Signaling Server](#setup-the-signaling-server)
+  - [Setup](#setup)
+  - [Configuration](#configuration)
+- [Client](#setup-the-client)
 
-## Host your own instance
-// TODO
+## Setup the signaling server
+
+The server is written in typescript and requires Node.js to run. It uses websockets for signaling.
+
+### Setup
+
+Clone this repository and use the following commands:
+
+```bash
+# install dependencies
+npm install
+# run locally in watch mode
+npm run dev
+# build for the distribution
+npm run build
+# start the built server
+npm run start
+```
+
+### Configuration
+
+Per default the signaling server listens on port `9090`. To change this you can set an environment variable named `PORT`.
+
+```bash
+# Eg. to run the server on port `8081` run:
+export PORT=8081 && npm run start
+```
+
+If you change the port or url of the signaling server remember to [configure the client](https://github.com/schlangguru/clip-beam-client#client-configuration) accordingly.
+
+## Setup the client
+
+See installation instructions for the [client](https://github.com/schlangguru/clip-beam-serve#setup-the-clientr)
