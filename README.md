@@ -47,4 +47,4 @@ If you change the port or url of the signaling server remember to [configure the
 
 ## Setup the client
 
-See installation instructions for the [client](https://github.com/schlangguru/clip-beam-serve#setup-the-clientr)
+See installation instructions for the [client](https://github.com/schlangguru/clip-beam-client#setup-the-client)
